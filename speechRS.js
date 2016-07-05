@@ -1,9 +1,6 @@
 (function(ctx){
-    //var voices = speechSynthesis.getVoices();
     function speak(text){ //return;
-        //!voices.length && (voices = speechSynthesis.getVoices());
         var utterThis = new SpeechSynthesisUtterance(text);
-        //utterThis.voice = voices[Math.round(Math.random()*10)%2];
         utterThis.pitch = 1;
         utterThis.rate = 1;
         utterThis.volume = 1;
@@ -20,21 +17,13 @@
     }
 
     var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
-    //var SpeechGrammarList = SpeechGrammarList || webkitSpeechGrammarList;
     var SpeechRecognitionEvent = SpeechRecognitionEvent || webkitSpeechRecognitionEvent;
 
     var recognition;
     var recognitionStarted;
 
     function start(intrimResultsCallback){
-        //var list = options.grammarList.join(' | ');
-        //var grammar = '#JSGF V1.0; grammar ' + options.key + '; public ' + options.key + ' = ' + list + ' ;';
-        
         recognition = new SpeechRecognition();
-
-        //var speechGrammarList = new SpeechGrammarList();
-        //speechGrammarList.addFromString(grammar, options.importance || 1); 
-        //recognition.grammars = speechGrammarList;
         recognition.continuous = true;
         recognition.lang = 'en-US';
         recognition.interimResults = true;
@@ -115,7 +104,7 @@
         var endClause = '$';
         var regex1, regex2;
         switch(options.instructionType){
-            case InstructionType.TEXT:
+            case InstructionType.TEXT: //'enter/put/record 10 dollars for price', 'enter 10 dollars for price', 'enter 10 for price', 'price 10', 'price is 10'
                 regex1 = new RegExp(beginClause + '(?:enter|put|record\\s+)?' + possibleValuesClause + unitClause + forClause + nameClause + endClause, 'i');
                 regex2 = new RegExp(beginClause + namePiped + '(?:\\s+is)?\\s+' + possibleValuesClause + '$', 'i');
                 break;
@@ -184,10 +173,10 @@
     ctx.speechHelper = {
         speak: speak,
         start: start,
+        next: next,
         addInstruction: function(options, callback) {
             addInstructionToList(options, callback, true);
         },
-        next: next,
         clearInstructions: function(){
             clearInstructionList(true);
         }
