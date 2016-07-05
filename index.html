@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <link href='bootstrap.min.css' rel='stylesheet' type='text/css'/>
+        <link href='styles.css' rel='stylesheet' type='text/css'/>
+        <link href='addProduct.html' rel='import'/>
+        <link href='addProductByStep.html' rel='import'/>
+        <script type="text/javascript" src="speechRS.js"></script>
+    </head>
+    <body class="container">
+        <div class="row">
+            <div class="col-xs-8 col-xs-offset-2">
+                <p class="head-links"><a href="javascript:;" id="btnSort">Sort</a> | <a href="javascript:;" id="lnkAdd">Add</a> | <a href="javascript:;" id="lnkAddByStep">Add by Step</a></p>
+                <form>
+                    <div id='templateContainer'>
+                        <div>
+                            <label id='lblAllProducts'></label>
+                        </div>
+                    </div>
+                </form>
+                <hr/>
+                <em id='lblIntrim' class="speech-highlight">...</em>
+            </div>
+        </div>
+
+        <script type="text/javascript">
+            let instructionItems = ['sort', 'add'];
+            let instructions = 'On this page you can ' + instructionItems.join(' and ') + ' products';
+        
+            let products = [];
+
+            function listProducts(ctx, route, next){
+                console.log(products);
+                document.querySelector('#lblAllProducts').textContent = products.join();
+            }
+
+            document.querySelector('#btnSort').onclick = function(){
+                products.sort();
+                listProducts();
+            };
+
+            document.querySelector('#lnkAdd').onclick = function(){
+                document.location.href = "addProduct.html";
+            };
+
+            speechHelper.speak(instructions);
+           
+            speechHelper.start(function(value, result){
+                document.querySelector('#lblIntrim').textContent = value;
+            });
+
+            speechHelper.addInstruction({ name: 'add', instructionType: 'button' }, function(value, instructionType, result, allResults){
+                loadPageHtml('addProduct.html');
+                addProductPage();
+            });
+
+            speechHelper.addInstruction({ name: 'add by step', instructionType: 'button' }, function(value, instructionType, result, allResults){
+                loadPageHtml('addProductByStep.html');
+                addProductByStepPage();
+            });
+
+            speechHelper.addInstruction({ name: ['sort', 'order'], instructionType: 'button' }, function(value, instructionType, result){
+                products.sort();
+                listProducts();
+            });
+
+            function loadPageHtml(path){
+                document.querySelector('#templateContainer>div').remove();
+                var link = document.querySelector('link[href="' + path + '"]');
+                var content = link.import;
+                var el = content.querySelector('#content-container');
+                document.querySelector('#templateContainer').appendChild(el.cloneNode(true));
+            }
+
+        </script>
+
+    </body>
+</html>

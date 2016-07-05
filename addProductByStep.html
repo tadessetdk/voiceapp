@@ -1,0 +1,104 @@
+<html>
+    <head>
+        <link href='styles.css' rel='stylesheet' type='text/css'/>
+        <script type="text/javascript" src="speechRS.js"></script>
+    </head>
+    <body>
+        <div id='content-container'>
+            <fieldset class="form-group">
+                <input type="text" id="txtProduct" class="form-control" placeholder="name"/>
+            </fieldset>
+            <fieldset class="form-group">
+                <input type="text" id="txtPrice" class="form-control" placeholder="price"/>
+            </fieldset>
+            <fieldset class="form-group">
+                <input type="text" id="txtQuantity" class="form-control" placeholder="quantity"/>
+            </fieldset>
+            <div class="checkbox">
+                <label><input type="checkbox" id="chkPromocode"/>Promo code</label>
+            </div>
+            <div class="radio">
+                <label><input type="radio" id="rdDay" name="time"/>Day</label>
+                <label><input type="radio" id="rdNight" name="time"/>Night</label>
+            </div>
+            <fieldset class="form-group">
+                <select id="selRegion" class="form-control">
+                    <option value="midwest" selected="selected">Mid-west</option>
+                    <option value="east coast">East coast</option>
+                    <option value="west coast">West coast</option>
+                </select>
+            </fieldset>
+            <button id="btnAdd" class="btn btn-info">Ok</button>
+        </div>
+
+        <script type="text/javascript">
+            function addProductByStepPage(){
+                let instructionItems = ['create a product and submit'];
+                let instructions = 'On this page you can ' + instructionItems.join(' and ');
+            
+                let products = JSON.parse(window.sessionStorage["products"]);
+
+                function listProducts(ctx, route, next){
+                    console.log(products);
+                }
+
+                let addProduct = function(){
+                    let prod = document.querySelector('#txtProduct');
+                    products.push(prod.value);
+                    document.location.href = 'index.html';
+                };
+
+                document.querySelector('#btnAdd').onclick = addProduct;
+                document.querySelector('#txtProduct').onkeyup = function(e){
+                    let k = e.which || e.keyCode;
+                    k === 13 && addProduct();
+                };
+
+                speechHelper.speak(instructions);
+                document.querySelector('#txtProduct').focus();
+
+                speechHelper.next({instructionText: 'First enter product name', name: 'name', instructionType: 'text' })
+                .then(function(value){
+                    document.querySelector('#txtProduct').value = value;
+                    document.querySelector('#txtPrice').focus();
+                    return speechHelper.next({instructionText: 'Next enter the price', name: 'price', unit: 'dollar', instructionType: 'text', pattern: '\\d+' });
+                })
+                .then(function(value){
+                    document.querySelector('#txtPrice').value = value;
+                    document.querySelector('#txtQuantity').focus();
+                    return speechHelper.next({instructionText: 'Next enter the quantity', name: 'quantity', instructionType: 'text', pattern: '\\d+' });
+                })
+                .then(function(value){
+                    document.querySelector('#txtQuantity').value = value;
+                    document.querySelector('#chkPromocode').focus();
+                    return speechHelper.next({instructionText: 'Next select promo code', name: 'Promo code', instructionType: 'select' });
+                })
+                .then(function(value){
+                    document.querySelector('#chkPromocode').checked = true;
+                     document.querySelector('input[name="time"]').focus();
+                    return speechHelper.next({instructionText: 'Next select the time', name: 'time', instructionType: 'select', possibleValues: ['day', 'night']});
+                })
+                .then(function(value){
+                    var el = document.getElementById('rd'+ value[0].toUpperCase() + value.substring(1));
+                    el && (el.checked = true);
+                    document.querySelector('#selRegion').focus();
+                    return speechHelper.next({instructionText: 'Next select the region', name: 'region', instructionType: 'select', possibleValues: ['east coast', 'west coast', 'mid west', 'midwest']});
+                })
+                .then(function(value){
+                    document.querySelector('#selRegion').value = value.toLowerCase();
+                    document.querySelector('#btnAdd').focus();
+                    return speechHelper.next({instructionText: 'Now you can press ok to submit the form', name: ['ok', 'okay', 'alright'], instructionType: 'button' });
+                })
+                .then(function(value){
+                    addProduct();
+                });
+
+                speechHelper.addInstruction({ name: ['back', 'go back'], instructionType: 'button' }, function(){
+                    window.history.back();
+                });
+            }
+
+        </script>
+
+    </body>
+</html>

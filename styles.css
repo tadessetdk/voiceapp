@@ -1,0 +1,33 @@
+body{
+    margin: 4em auto;
+}
+
+body, button, input, a, label{
+   font-size: 1.3em !important;
+}
+
+:focus, :focus~label{
+    background-color: #FFFF00 !important;
+    color: #000000 !important;
+}
+
+.speech-highlight{
+    background-color: #ccf7ff;
+    padding: 8px 16px;
+}
+
+.btn{
+    min-width: 100px;
+}
+
+.form-group, .checkbox, .radio{
+    margin-bottom: 2em;   
+}
+
+.head-links a{
+    margin: auto 0.4em;
+}
+
+.head-links a:first-child{
+    margin-left: 0;
+}

@@ -1,0 +1,87 @@
+<html>
+    <head>
+        <link href='styles.css' rel='stylesheet' type='text/css'/>
+        <script type="text/javascript" src="speechRS.js"></script>
+    </head>
+    <body>
+        <div id='content-container'>
+            <p><input type="text" id="txtProduct" placeholder="name"/></p>
+            <p><input type="text" id="txtPrice" placeholder="price"/></p>
+            <p><input type="text" id="txtQuantity" placeholder="quantity"/></p>
+            <p><input type="checkbox" id="chkPromocode"/><label for="chkPromocode">Promo Code</label></p>
+            <p>
+                <input type="radio" id="rdDay" name="time"/><label for="rdDay">Day</label>
+                <input type="radio" id="rdNight" name="time"/><label for="rdNight">Night</label>
+            </p>
+            <p>
+                <label>Region</label>
+                <select id="selRegion">
+                    <option value="midwest" selected="selected">Mid West</option>
+                    <option value="eastside">East Side</option>
+                    <option value="westside">West Side</option>
+                </select>
+            </p>
+            <p><button id="btnAdd">Ok</button></p>
+        </div>
+        <script type="text/javascript">
+            function addProductPage(){
+                let instructionItems = ['create a product and submit'];
+                let instructions = 'On this page you can ' + instructionItems.join(' and ');
+            
+                let products = JSON.parse(window.sessionStorage["products"]);
+
+                function listProducts(ctx, route, next){
+                    console.log(products);
+                }
+
+                let addProd = function(){
+                    let prod = document.querySelector('#txtProduct');
+                    products.push(prod.value);
+                    document.location.href = 'index.html';
+                };
+
+                document.querySelector('#btnAdd').onclick = addProd;
+                document.querySelector('#txtProduct').onkeyup = function(e){
+                    let k = e.which || e.keyCode;
+                    k === 13 && addProd();
+                };
+
+                speechHelper.speak(instructions);
+            
+                speechHelper.addInstruction({ name: 'name', instructionType: 'text' }, function(value, instructionType, result, allResults){
+                    document.querySelector('#txtProduct').value = value;
+                });
+
+                speechHelper.addInstruction({ name: 'price', unit: 'dollar', instructionType: 'text' }, function(value, instructionType, result){
+                    document.querySelector('#txtPrice').value = value;
+                });
+
+                speechHelper.addInstruction({ name: 'quantity', instructionType: 'text' }, function(value, instructionType, result){
+                    document.querySelector('#txtQuantity').value = value;
+                });
+
+                speechHelper.addInstruction({ name: 'Promo code', instructionType: 'select' }, function(value, instructionType, result){
+                    document.querySelector('#chkPromocode').checked = true;
+                });
+
+                speechHelper.addInstruction({ name: 'time', instructionType: 'select' }, function(value, instructionType, result){
+                    var el = document.getElementById('rd'+ value[0].toUpperCase() + value.substring(1));
+                    el && (el.checked = true);
+                });
+
+                speechHelper.addInstruction({ name: 'region', instructionType: 'select' }, function(value, instructionType, result){
+                    document.querySelector('#selRegion').value = value.toLowerCase();
+                });
+
+                speechHelper.addInstruction({ name: ['ok', 'okay'], instructionType: 'button' }, function(value, instructionType, result){
+                    addProd();
+                });
+
+                speechHelper.addInstruction({ name: ['back', 'go back'], instructionType: 'button' }, function(value, instructionType, result){
+                    window.history.back();
+                });
+            }
+        </script>
+
+    </body>
+</html>
