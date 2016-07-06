@@ -1,19 +1,35 @@
 (function(ctx){
+
+    var voicePromise = (function(){
+        return new Promise(function(resolve, reject){
+            var intervalHandle = window.setInterval(function(){	
+                var allVoices = speechSynthesis.getVoices();
+                console.log('loading voices');
+                if(!allVoices || !allVoices.length) return;
+                var voices = speechSynthesis.getVoices().filter(function(v) { return v.name.toLowerCase().trim() == 'google us english' });
+                voice = (voices.length && voices[0]) || allVoices[0];  
+                resolve(voice);  
+                window.clearInterval(intervalHandle);
+            }, 100);
+        });
+    })();
+
     function speak(text){ //return;
-        var utterThis = new SpeechSynthesisUtterance(text);
-        utterThis.pitch = 1;
-        utterThis.rate = 1;
-        utterThis.volume = 1;
-        utterThis.onend = function(e){
-            //console.log('utter ended', e);
-            utterThis = null;
-        };
-
-        utterThis.onerror = function(e){
-            console.log('utter error', e);
-        };
-
-        speechSynthesis.speak(utterThis);
+        voicePromise.then(function(voice){
+            var utterThis = new SpeechSynthesisUtterance(text);
+            utterThis.voice = voice;
+            utterThis.pitch = 1;
+            utterThis.rate = 1;
+            utterThis.volume = 1;
+            utterThis.onend = function(e){
+                //console.log('utter ended', e);
+                utterThis = null;
+            };
+            utterThis.onerror = function(e){
+                console.log('utter error', e);
+            };
+            speechSynthesis.speak(utterThis);
+        });
     }
 
     var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
