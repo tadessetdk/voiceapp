@@ -9,11 +9,11 @@
     </head>
     <body class="container">
         <div class="row">
-            <div class="col-xs-8 col-xs-offset-2">
+            <div class="col-xs-8 col-xs-offset-2 column-container">
                 <p class="head-links">
-                    <a href="javascript:;">Sort</a> | 
-                    <a href="javascript:;">Add</a> | 
-                    <a href="javascript:;">Add by Step</a>  
+                    <a href="javascript:;">Sort</a>
+                    <a href="javascript:;" id="lnkAdd">Add</a> 
+                    <a href="javascript:;" id="lnkAddByStep">Add by Step</a>  
                     <a href="javascript:;" id="lnkStartStop" class="pull-right"><span class="glyphicon glyphicon-stop"></span></a>
                 </p>
                 <p></p>
@@ -24,11 +24,12 @@
                         </div>
                     </div>
                 </form>
-                <em id='lblIntrim' class="speech-highlight">...</em>
+                <em><div id='lblIntrim' class="speech-highlight">...</div></em>
             </div>
         </div>
 
         <script type="text/javascript">
+            var currentPage;
             let instructionItems = ['sort', 'add'];
             let instructions = 'On this page you can ' + instructionItems.join(' and ') + ' products';
         
@@ -53,13 +54,11 @@
             });
 
             speechHelper.addInstruction({ name: 'add', instructionType: 'button' }, function(value, instructionType, result, allResults){
-                loadPageHtml('addProduct.html');
-                addProductPage();
+                navigateToAddPage();
             });
 
             speechHelper.addInstruction({ name: 'add by step', instructionType: 'button' }, function(value, instructionType, result, allResults){
-                loadPageHtml('addProductByStep.html');
-                addProductByStepPage();
+                navigateToAddByStepPage();
             });
 
             speechHelper.addInstruction({ name: ['sort', 'order'], instructionType: 'button' }, function(value, instructionType, result){
@@ -69,8 +68,24 @@
             });
 
             speechHelper.addInstruction({ name: ['back', 'go back'], instructionType: 'button' }, function(){
+                if(currentPage === 'default-page') return;
                 loadPageHtml('default.html');
+                currentPage = 'default-page';
             });
+
+            function navigateToAddPage(){
+                if(currentPage === 'add-page') return;
+                loadPageHtml('addProduct.html');
+                addProductPage();
+                currentPage = 'add-page';
+            }
+
+            function navigateToAddByStepPage(){
+                if(currentPage === 'add-bystep-page') return;
+                loadPageHtml('addProductByStep.html');
+                addProductByStepPage();
+                currentPage = 'add-bystep-page';
+            }
 
             function loadPageHtml(path){
                 document.querySelector('#templateContainer>div').remove();
@@ -88,7 +103,10 @@
             (function(){
                 document.querySelector('#lnkStartStop').onclick = function(){
                     speechHelper.toggleState();
-                }
+                };
+
+                document.querySelector('#lnkAdd').onclick = navigateToAddPage;
+                document.querySelector('#lnkAddByStep').onclick = navigateToAddByStepPage;
             })();
         </script>
 

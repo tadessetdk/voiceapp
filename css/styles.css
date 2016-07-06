@@ -2,7 +2,7 @@ body{
     margin: 4em auto;
 }
 
-body, button, input, a, label{
+body, button, input, a, label, select{
    font-size: 1.3em !important;
 }
 
@@ -29,7 +29,13 @@ body, button, input, a, label{
 }
 
 .head-links a{
-    margin: 0.2em auto 0.4em
+    margin: 0.2em auto 0.8em;
+}
+
+.head-links a:not(:last-child):not(:nth-last-child(2))::after{
+    content: '|';
+    margin: auto .5em;
+    color: #DDDDDD;
 }
 
 .head-links a:first-child{
@@ -42,6 +48,10 @@ body, button, input, a, label{
 
 .glyphicon-stop {
     color: red;
+}
+
+.column-container{
+    max-width: 600px;
 }
 
 #templateContainer{
