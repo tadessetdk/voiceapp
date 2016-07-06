@@ -30,7 +30,7 @@
         let instructionItems = ['create a product and submit'];
         let instructions = 'On this page you can ' + instructionItems.join(' and ');
     
-        let products = JSON.parse(window.sessionStorage["products"]);
+        let products = []; //JSON.parse(window.sessionStorage["products"]);
 
         function listProducts(ctx, route, next){
             console.log(products);
@@ -85,10 +85,6 @@
         })
         .then(function(value){
             addProduct();
-        });
-
-        speechHelper.addInstruction({ name: ['back', 'go back'], instructionType: 'button' }, function(){
-            window.history.back();
         });
     }
 

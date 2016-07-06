@@ -2,6 +2,7 @@
     <head>
         <link href='bootstrap.min.css' rel='stylesheet' type='text/css'/>
         <link href='styles.css' rel='stylesheet' type='text/css'/>
+        <link href='default.html' rel='import'/>
         <link href='addProduct.html' rel='import'/>
         <link href='addProductByStep.html' rel='import'/>
         <script type="text/javascript" src="speechRS.js"></script>
@@ -9,7 +10,12 @@
     <body class="container">
         <div class="row">
             <div class="col-xs-8 col-xs-offset-2">
-                <p class="head-links"><a href="javascript:;" id="btnSort">Sort</a> | <a href="javascript:;" id="lnkAdd">Add</a> | <a href="javascript:;" id="lnkAddByStep">Add by Step</a></p>
+                <p class="head-links">
+                    <a href="javascript:;">Sort</a> | 
+                    <a href="javascript:;">Add</a> | 
+                    <a href="javascript:;">Add by Step</a>
+                </p>
+                <p></p>
                 <form>
                     <div id='templateContainer'>
                         <div>
@@ -33,15 +39,6 @@
                 document.querySelector('#lblAllProducts').textContent = products.join();
             }
 
-            document.querySelector('#btnSort').onclick = function(){
-                products.sort();
-                listProducts();
-            };
-
-            document.querySelector('#lnkAdd').onclick = function(){
-                document.location.href = "addProduct.html";
-            };
-
             speechHelper.speak(instructions);
            
             speechHelper.start(function(value, result){
@@ -61,6 +58,11 @@
             speechHelper.addInstruction({ name: ['sort', 'order'], instructionType: 'button' }, function(value, instructionType, result){
                 products.sort();
                 listProducts();
+                console.log('done sorting products!');
+            });
+
+            speechHelper.addInstruction({ name: ['back', 'go back'], instructionType: 'button' }, function(){
+                loadPageHtml('default.html');
             });
 
             function loadPageHtml(path){
