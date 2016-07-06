@@ -1,11 +1,11 @@
 <html>
     <head>
-        <link href='bootstrap.min.css' rel='stylesheet' type='text/css'/>
-        <link href='styles.css' rel='stylesheet' type='text/css'/>
-        <link href='default.html' rel='import'/>
-        <link href='addProduct.html' rel='import'/>
-        <link href='addProductByStep.html' rel='import'/>
-        <script type="text/javascript" src="speechRS.js"></script>
+        <link href='css/bootstrap.min.css' rel='stylesheet' type='text/css'/>
+        <link href='css/styles.css' rel='stylesheet' type='text/css'/>
+        <link href='templates/default.html' rel='import'/>
+        <link href='templates/addProduct.html' rel='import'/>
+        <link href='templates/addProductByStep.html' rel='import'/>
+        <script type="text/javascript" src="scripts/speechRS.js"></script>
     </head>
     <body class="container">
         <div class="row">
@@ -13,7 +13,8 @@
                 <p class="head-links">
                     <a href="javascript:;">Sort</a> | 
                     <a href="javascript:;">Add</a> | 
-                    <a href="javascript:;">Add by Step</a>
+                    <a href="javascript:;">Add by Step</a>  
+                    <a href="javascript:;" id="lnkStartStop" class="pull-right"><span class="glyphicon glyphicon-stop"></span></a>
                 </p>
                 <p></p>
                 <form>
@@ -23,7 +24,6 @@
                         </div>
                     </div>
                 </form>
-                <hr/>
                 <em id='lblIntrim' class="speech-highlight">...</em>
             </div>
         </div>
@@ -41,8 +41,15 @@
 
             speechHelper.speak(instructions);
            
-            speechHelper.start(function(value, result){
-                document.querySelector('#lblIntrim').textContent = value;
+            speechHelper.start(function(type, value, result){
+                switch(type){
+                    case 'intrim-results':
+                        document.querySelector('#lblIntrim').textContent = value;
+                        break;
+                    case 'status-change':
+                        toggleState(value);
+                        break;
+                }
             });
 
             speechHelper.addInstruction({ name: 'add', instructionType: 'button' }, function(value, instructionType, result, allResults){
@@ -67,12 +74,22 @@
 
             function loadPageHtml(path){
                 document.querySelector('#templateContainer>div').remove();
-                var link = document.querySelector('link[href="' + path + '"]');
+                var link = document.querySelector('link[href="templates/' + path + '"]');
                 var content = link.import;
                 var el = content.querySelector('#content-container');
                 document.querySelector('#templateContainer').appendChild(el.cloneNode(true));
             }
 
+            function toggleState(started){
+                var el = document.querySelector('#lnkStartStop .glyphicon');
+                el.setAttribute('class', started && 'glyphicon glyphicon-stop' || 'glyphicon glyphicon-refresh');
+            }
+
+            (function(){
+                document.querySelector('#lnkStartStop').onclick = function(){
+                    speechHelper.toggleState();
+                }
+            })();
         </script>
 
     </body>

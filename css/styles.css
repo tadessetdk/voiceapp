@@ -7,8 +7,12 @@ body, button, input, a, label{
 }
 
 :focus, :focus~label{
-    background-color: #FFFF00 !important;
+    background-color: #ffffee !important;
     color: #000000 !important;
+}
+
+#lnkStartStop:focus  {
+    background-color: #FFFFFF !important;
 }
 
 .speech-highlight{
@@ -25,9 +29,25 @@ body, button, input, a, label{
 }
 
 .head-links a{
-    margin: auto 0.4em;
+    margin: 0.2em auto 0.4em
 }
 
 .head-links a:first-child{
     margin-left: 0;
+}
+
+.glyphicon-refresh {
+    color: #2085da;
+}
+
+.glyphicon-stop {
+    color: red;
+}
+
+#templateContainer{
+    margin: 1em auto 2em auto;
+    padding: 3em 2em;
+    border: solid 1px #DDDDDD;
+    border-radius: 5px;
+    background-color: #efefef;
 }

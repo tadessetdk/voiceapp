@@ -6,29 +6,56 @@
                 var allVoices = speechSynthesis.getVoices();
                 console.log('loading voices');
                 if(!allVoices || !allVoices.length) return;
-                var voices = speechSynthesis.getVoices().filter(function(v) { return v.name.toLowerCase().trim() == 'google us english' });
-                voice = (voices.length && voices[0]) || allVoices[0];  
+                var voice;
+                var voices = speechSynthesis.getVoices().some(function(v) { 
+                    var found = (v.name.toLowerCase() === 'alex' && v.lang.toLowerCase() === 'en-us') || (v.name.toLowerCase().trim() === 'google us english');
+                    found && (voice = v);
+                    return found;
+                });
+                voice = voice || allVoices[0];  
                 resolve(voice);  
                 window.clearInterval(intervalHandle);
             }, 100);
         });
     })();
-
-    function speak(text){ //return;
+    
+    function speak(text){
         voicePromise.then(function(voice){
-            var utterThis = new SpeechSynthesisUtterance(text);
-            utterThis.voice = voice;
-            utterThis.pitch = 1;
-            utterThis.rate = 1;
-            utterThis.volume = 1;
-            utterThis.onend = function(e){
-                //console.log('utter ended', e);
-                utterThis = null;
+            var utter = new SpeechSynthesisUtterance();
+            utter.voice = voice;
+            utter.pitch = 1;
+            utter.rate = 1;
+            utter.volume = 1;
+            utter.text = text;
+            //utter.text = '<?xml version="1.0"?>\r\n<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">'+ text +'</speak>';
+            
+            utter.onend = function(e){
+                console.log('utter ended'); //, e);
+                utter = null;
             };
-            utterThis.onerror = function(e){
+            utter.onerror = function(e){
                 console.log('utter error', e);
             };
-            speechSynthesis.speak(utterThis);
+
+            speechSynthesis.speak(utter);
+
+            /*//with https its more reliable to stop listening while speaking
+            stopRecognition()
+            .then(function(){
+                return new Promise(function(resolve, reject){
+                    speechSynthesis.speak(utter);
+                    utter.onend = function(){
+                        resolve();
+                        console.log('utter ended');
+                    };
+                    utter.onerror = function(e){
+                        console.log('utter error', e);
+                        reject();
+                    };
+                }).then(function(){
+                    startRecognition();
+                });
+            });*/
         });
     }
 
@@ -37,8 +64,10 @@
 
     var recognition;
     var recognitionStarted;
+    var recoginitionStateCallback;
 
-    function start(intrimResultsCallback){
+    function start(callback){
+        recoginitionStateCallback = callback;
         recognition = new SpeechRecognition();
         recognition.continuous = true;
         recognition.lang = 'en-US';
@@ -57,9 +86,35 @@
                 //console.log('matching command', command);
             }
 
-            !!intrimResultsCallback && intrimResultsCallback.apply(null, [phrase, current]);
+            invokeRecoginitionCallback('intrim-results', phrase, current);
         };
+      
+        startRecognition();
+    }
 
+    function setupStartEvent(){
+        return new Promise(function(resolve, reject){
+            recognition.onstart = function(e){
+                recognitionStarted = true;
+                invokeRecoginitionCallback('status-change', recognitionStarted);
+                console.log('recg started'); //, e);
+                resolve();
+            };
+        });
+    }
+    
+    function setupEndEvent(){
+        return new Promise(function(resolve, reject){
+            recognition.onend = function(e){
+                recognitionStarted = false;
+                invokeRecoginitionCallback('status-change', recognitionStarted);
+                console.log('recg ended'); //, e);
+                resolve();
+            };
+        });
+    }
+
+    function setupOtherRecognitionEvents(){
         recognition.onspeechend = function(e){
             console.log('speech ended');
         };
@@ -71,17 +126,32 @@
         recognition.onerror = function(e){
             console.log('error', e.error);
         };
+    }
 
-        recognition.onend = function(e){
-            console.log('ended', e);
-        };
-
-        startRecognition();
+    function invokeRecoginitionCallback(){
+        recoginitionStateCallback.apply(null, arguments);
     }
 
     function startRecognition(){
-        !recognitionStarted && recognition && recognition.start();
-        recognitionStarted = true;
+        if(!recognitionStarted && recognition){
+            var promise = setupStartEvent();
+            setupEndEvent();
+            setupOtherRecognitionEvents();
+            recognition.start();
+            return promise;
+        }
+
+        return Promise.resolve();
+    }
+
+    function stopRecognition(){
+        if(recognitionStarted && recognition) {
+            var promise = setupEndEvent();
+            recognition.stop();
+            return promise;
+        }
+
+        return Promise.resolve();
     }
 
     function next(options){
@@ -190,6 +260,9 @@
         speak: speak,
         start: start,
         next: next,
+        toggleState: function(){
+            recognitionStarted ? stopRecognition() : startRecognition();
+        },
         addInstruction: function(options, callback) {
             addInstructionToList(options, callback, true);
         },
