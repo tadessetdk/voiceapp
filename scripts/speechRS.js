@@ -1,4 +1,5 @@
 (function(ctx){
+    var isHttps = document.location.protocol.toLowerCase() === 'https:';
 
     var voicePromise = (function(){
         return new Promise(function(resolve, reject){
@@ -26,36 +27,40 @@
             utter.pitch = 1;
             utter.rate = 1;
             utter.volume = 1;
-            utter.text = text;
-            //utter.text = '<?xml version="1.0"?>\r\n<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">'+ text +'</speak>';
-            
-            utter.onend = function(e){
-                console.log('utter ended'); //, e);
-                utter = null;
-            };
-            utter.onerror = function(e){
-                console.log('utter error', e);
-            };
+            utter.text = text; // = '<?xml version="1.0"?>\r\n<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">'+ text +'</speak>';
+            isHttps ? speakWithHttps(utter) : speakWithHttp(utter);
+        });
+    }
 
-            speechSynthesis.speak(utter);
+    function speakWithHttp(utter){
+        //http version
+        utter.onend = function(e){
+            console.log('utter ended'); //, e);
+        };
+        utter.onerror = function(e){
+            console.log('utter error', e);
+        };
 
-            /*//with https its more reliable to stop listening while speaking
-            stopRecognition()
-            .then(function(){
-                return new Promise(function(resolve, reject){
-                    speechSynthesis.speak(utter);
-                    utter.onend = function(){
-                        resolve();
-                        console.log('utter ended');
-                    };
-                    utter.onerror = function(e){
-                        console.log('utter error', e);
-                        reject();
-                    };
-                }).then(function(){
-                    startRecognition();
-                });
-            });*/
+        speechSynthesis.speak(utter);
+    }
+
+    function speakWithHttps(utter){
+        //with https, its more reliable to stop listening while speaking
+        stopRecognition()
+        .then(function(){
+            return new Promise(function(resolve, reject){
+                speechSynthesis.speak(utter);
+                utter.onend = function(){
+                    resolve();
+                    console.log('utter ended');
+                };
+                utter.onerror = function(e){
+                    console.log('utter error', e);
+                    reject();
+                };
+            }).then(function(){
+                startRecognition();
+            });
         });
     }
 
